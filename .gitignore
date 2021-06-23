@@ -22,14 +22,14 @@ jateng2<-as.data.frame(jateng1)
 text(coordinates(jateng1), labels=jateng2$NAMA_KAB,cex=0.7, col="blue")
 W2<-nb2listw(jateng_nb, style="W",zero.policy=TRUE)
 
-#Spatial Panel Data Lag Model
+#Spatial Lag Panel Data Model
 library(splm)
 mp<- IPM~TPAK+APSMA+PRTSL+PDRB+PPM+KP+t2018+t2019
 modelsar<-spml(mp,data=pdata2,listw=W2,model="within",
                lag=TRUE, spatial.error="none")
 summary(modelsar)
 
-#Spatial Panel Data Error Model
+#Spatial Error Panel Data Model
 modelsem<-spml(mp,data=pdata2,listw=W2,model="within",
                lag=FALSE,spatial.error="b")
 summary(modelsem)
