@@ -1,39 +1,36 @@
-# History files
-.Rhistory
-.Rapp.history
+#Multiple Regression Linear Model
+library(plm)
+pdata2 <- pdata.frame(IPM_17_19,index = c("ID","Tahun"))
+modelpanel1<-plm(IPM~TPAK+APSMA+PRTSL+PDRB+PPM+KP+
+                   t2018+t2019,data=pdata2,model="pooling")
+#Assumptions check
+library(lmtest)
+library(nortest)
+lillie.test(resid(modelpanel1))
+bptest(modelpanel1, studentize = T)
+pdwtest(modelpanel1)
 
-# Session Data files
-.RData
+#Weight matrix
+library(rgdal)
+library(spdep)
+x <-readOGR("C:/Users/witaa/Downloads/Jawa(1)/Jawa/jawa.shp", stringsAsFactors=FALSE)
+jateng1 <- subset(x, NAMA_PROP == "JAWA TENGAH")
+jateng_nb <- poly2nb(jateng1,row.names = seq(1,35),queen = FALSE)
+plot(jateng1, col="white", border="grey")
+plot(jateng_nb, coordinates(jateng1), col="red", add=TRUE)
+jateng2<-as.data.frame(jateng1)
+text(coordinates(jateng1), labels=jateng2$NAMA_KAB,cex=0.7, col="blue")
+W2<-nb2listw(jateng_nb, style="W",zero.policy=TRUE)
 
-# User-specific files
-.Ruserdata
+#Spatial Panel Data Lag Model
+library(splm)
+mp<- IPM~TPAK+APSMA+PRTSL+PDRB+PPM+KP+t2018+t2019
+modelsar<-spml(mp,data=pdata2,listw=W2,model="within",
+               lag=TRUE, spatial.error="none")
+summary(modelsar)
 
-# Example code in package build process
-*-Ex.R
-
-# Output files from R CMD build
-/*.tar.gz
-
-# Output files from R CMD check
-/*.Rcheck/
-
-# RStudio files
-.Rproj.user/
-
-# produced vignettes
-vignettes/*.html
-vignettes/*.pdf
-
-# OAuth2 token, see https://github.com/hadley/httr/releases/tag/v0.3
-.httr-oauth
-
-# knitr and R markdown default cache directories
-*_cache/
-/cache/
-
-# Temporary files created by R markdown
-*.utf8.md
-*.knit.md
-
-# R Environment Variables
-.Renviron
+#Spatial Panel Data Error Model
+modelsem<-spml(mp,data=pdata2,listw=W2,model="within",
+               lag=FALSE,spatial.error="b")
+summary(modelsem)
+effects(modelsar)
