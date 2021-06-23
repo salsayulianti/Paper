@@ -1,2 +1,0 @@
-# Paper
-Spatial Topic
